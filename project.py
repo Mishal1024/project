@@ -1,38 +1,48 @@
+from tabulate import tabulate
+
 class Task():
     def __init__(self,task,priority):
         self.task = task
         self.priority = priority
-        self.done = False
+        self.done = "Incomplete"
     
-    def __str__(self):
-        return f"{self.task} ({self.priority}) - Done: {self.done}"
+    def to_list(self):
+        return [self.task,self.priority,self.done]
+    
+try:
+    data = open("data.json","r")
+except FileNotFoundError:
+    data = open("data.json","w")
 
 
 def main():
     while True:
         print("Menu\n1. Tasks\n2. Habits\n3. Notes\n4. Focus Sessions\n5. Stats\n6. Exit")
-        c = input("Choice: ")
+        main_menu_choice = input("Choice: ")
         print()
-        match c:
+        match main_menu_choice:
             case "1":
-                tasks = []
+                tasks = [["Task","Priority","Completion"]]
                 while True:
                     print("Tasks")
                     for task in tasks:
-                        print(task)
+                        print(tabulate(tasks,headers = "firstrow",tablefmt="grid"))
                     print()
                     print("Tasks Menu\n1. Add Task\n2. Mark Complete\n3. Remove Completed\n4. Exit")
-                    t = input("Choice: ")
-                    match t:
+                    task_menu_choice = input("Choice: ")
+                    match task_menu_choice:
                         case "1":
                             task = input("Task: ")
                             priority = input("Priority: ")
-                            tasks.append(Task(task,priority))
+                            tasks.append(Task(task,priority).to_list())
+                            print(tasks)
                         case "2":
-                            tasks[int(input("Task Number: "))-1].done = True
+                            tasks[int(input("Task Number: "))][2] = "Complete"
                         case "3":
                             for task in tasks:
-                                if task.done:
+                                if task[2] == "Complettion":
+                                    pass
+                                elif task[2] == "Complete":
                                     tasks.remove(task)
                         case "4":
                             print()
