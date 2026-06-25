@@ -18,8 +18,8 @@ def main():
                 tasks = []
                 while True:
                     print("Tasks")
-                    for ptask in tasks:
-                        print(ptask)
+                    for task in tasks:
+                        print(task)
                     print()
                     print("Tasks Menu\n1. Add Task\n2. Mark Complete\n3. Remove Completed\n4. Exit")
                     t = input("Choice: ")
@@ -27,14 +27,13 @@ def main():
                         case "1":
                             task = input("Task: ")
                             priority = input("Priority: ")
-                            task = Task(task,priority)
-                            tasks.append(task)
+                            tasks.append(Task(task,priority))
                         case "2":
                             tasks[int(input("Task Number: "))-1].done = True
                         case "3":
-                            for i in range(len(tasks)-1):
-                                if tasks[i].done == True:
-                                    del tasks[i]
+                            for task in tasks:
+                                if task.done:
+                                    tasks.remove(task)
                         case "4":
                             print()
                             break
