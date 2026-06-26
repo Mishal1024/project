@@ -26,9 +26,7 @@ def main():
             case "1":
                 tasks = [["Task","Priority","Completion"]]
                 while True:
-                    print("Tasks")
-                    for task in tasks:
-                        print(tabulate(tasks,headers = "firstrow",tablefmt="grid"))
+                    print(tabulate(tasks,headers = "firstrow",tablefmt="grid"))
                     print()
                     print("Tasks Menu\n1. Add Task\n2. Mark Complete\n3. Remove Completed\n4. Exit")
                     task_menu_choice = input("Choice: ")
@@ -37,15 +35,10 @@ def main():
                             task = input("Task: ")
                             priority = input("Priority: ")
                             tasks.append(Task(task,priority).to_list())
-                            print(tasks)
                         case "2":
                             tasks[int(input("Task Number: "))][2] = "Complete"
                         case "3":
-                            for task in tasks:
-                                if task[2] == "Complettion":
-                                    pass
-                                elif task[2] == "Complete":
-                                    tasks.remove(task)
+                            tasks = [task for task in tasks if task[2] != "Complete"]
                         case "4":
                             print()
                             break
