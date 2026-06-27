@@ -34,29 +34,46 @@ class Habit():
             "frequency" : self.frequency,
             "target" : self.target
         }
+    
+
+class Note():
+    def __init__(self,title,content):
+        self.title = title
+        self.content = content
+    
+    def to_list(self):
+        return [self.title,self.content]
+    
+    def to_dict(self):
+        return {
+            "title" : self.title,
+            "content" : self.content
+        }
 
 
 try:
     with open("data.json", "r") as file:
         data = json.load(file)
+
         temp = []
         for t in data["task"]:
             task = Task(t["task"],t["priority"])
             task.done = t["done"]
             temp.append(task)
         data["task"] = temp
+
         temp = []
         for h in data["habit"]:
             habit = Habit(h["habit"],h["frequency"],h["target"])
             temp.append(habit)
         data["habit"] = temp
-        '''
+        
         temp = []
         for n in data["note"]:
             note = Task(n["title"],n["note"])
             temp.append(note)
         data["note"] = temp
-        '''
+        
 
 except FileNotFoundError:
     data = {
@@ -68,13 +85,15 @@ except FileNotFoundError:
 
 
 def main():
+    tasks = data["task"]
+    habits = data["habit"]
+    notes = data["note"]
     while True:
         print("Menu\n1. Tasks\n2. Habits\n3. Notes\n4. Focus Sessions\n5. Stats\n6. Exit")
         main_menu_choice = input("Choice: ")
         print()
         match main_menu_choice:
             case "1":
-                tasks = data["task"]
                 while True:
                     print(tabulate([task.to_list() for task in tasks],headers =["Task","Priority","Completion"],tablefmt="fancy_grid"))
                     print()
@@ -98,7 +117,6 @@ def main():
                     data["task"] = tasks
 
             case "2":
-                habits = data["habit"]
                 while True:
                     print(tabulate([habit.to_list() for habit in habits],headers =["Habit","Frequency","Target"],tablefmt="fancy_grid"))
                     print()
@@ -118,25 +136,45 @@ def main():
                     data["habit"] = habits
 
             case "3":
-                print("Notes")
+                while True:
+                    print(tabulate([note.to_list() for note in notes],headers =["Title","Content"],tablefmt="fancy_grid"))
+                    print()
+                    print("Notes Menu\n1. Add Note\n2. Remove Note\n3. Exit")
+                    note_menu_choice = input("Choice: ")
+                    match note_menu_choice:
+                        case "1":
+                            add_note(input("Title: "),input("Content: "),notes)
+                        case "2":
+                            remove_note(int(input("Note Number: ")),notes)
+                        case "3":
+                            print()
+                            break
+                        case _:
+                            print("Invalid Input")
+                    print()
+                    data["note"] = notes
+
             case "4":
                 print("Focus")
+
             case "5":
                 print("stats")
+
             case "6":
                 break
+
             case _:
                 print("Invalid Input")
                 pass
 
     data["task"] = [task.to_dict() for task in tasks]
     data["habit"] = [habit.to_dict() for habit in habits]
+    data["note"] = [note.to_dict() for note in notes]
     with open("data.json", "w") as file:
         json.dump(data,file,indent=4)
         file.close()
 
 
-#Task functions
 def add_task(task,priority,tasks):
     tasks.append(Task(task,priority))
 
@@ -149,12 +187,17 @@ def unmark_task(i,tasks):
 def remove_marked(tasks):
     return [task for task in tasks if task.done != "Complete"]
 
-#Habit functions
 def add_habit(habit,frequency,target,habits):
     habits.append(Habit(habit,frequency,target))
 
 def remove_habit(i,habits):
     del habits[i-1]
+
+def add_note(title,content,notes):
+    notes.append(Note(title,content))
+
+def remove_note(i,notes):
+    del notes[i-1]
 
 
 if __name__ == "__main__":
