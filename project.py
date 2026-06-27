@@ -1,5 +1,6 @@
 from tabulate import tabulate
 import json
+from datetime import datetime
 
 
 class Task():
@@ -51,6 +52,23 @@ class Note():
         }
 
 
+class Log():
+    def __init__(self,action,detail,time):
+        self.action = action
+        self.detail = detail
+        self.time = time
+    
+    def to_list(self):
+        return [self.action,self.detail,self.time]
+    
+    def to_dict(self):
+        return {
+            "action" : self.action,
+            "detail" : self.detail,
+            "time" : self.time
+        }
+    
+
 try:
     with open("data.json", "r") as file:
         data = json.load(file)
@@ -74,6 +92,12 @@ try:
             temp.append(note)
         data["note"] = temp
         
+        temp = []
+        for l in data["log"]:
+            log = Log(l["action"],l["detail"],l["time"])
+            temp.append(log)
+        data["log"] = temp
+        
 
 except FileNotFoundError:
     data = {
@@ -88,8 +112,9 @@ def main():
     tasks = data["task"]
     habits = data["habit"]
     notes = data["note"]
+    logs = data["log"]
     while True:
-        print("Menu\n1. Tasks\n2. Habits\n3. Notes\n4. Focus Sessions\n5. Stats\n6. Exit")
+        print("Menu\n1. Tasks\n2. Habits\n3. Notes\n4. Logs\n5. Stats\n6. Exit")
         main_menu_choice = input("Choice: ")
         print()
         match main_menu_choice:
@@ -102,12 +127,21 @@ def main():
                     match task_menu_choice:
                         case "1":
                             add_task(input("Task: "),input("Priority: "),tasks)
+                            add_log("Task Added",tasks[-1].task,logs)
                         case "2":
-                            mark_task(int(input("Task Number: ")),tasks)
+                            i = int(input("Task Number: "))
+                            mark_task(i,tasks)
+                            add_log("Task Completed",tasks[i-1].task,logs)
                         case "3":
-                            unmark_task(int(input("Task Number: ")),tasks)
+                            i = int(input("Task Number: "))
+                            unmark_task(i,tasks)
+                            add_log("Task Uncompleted",tasks[i-1].task,logs)
                         case "4":
+                            for task in tasks:
+                                if task.done == "Complete":
+                                    add_log("Task Removed",task.task,logs)
                             tasks = remove_marked(tasks)
+                            
                         case "5":
                             print()
                             break
@@ -118,15 +152,18 @@ def main():
 
             case "2":
                 while True:
-                    print(tabulate([habit.to_list() for habit in habits],headers =["Habit","Frequency","Target"],tablefmt="fancy_grid"))
+                    print(tabulate([habit.to_list() for habit in habits],headers=["Habit","Frequency","Target"],tablefmt="fancy_grid"))
                     print()
                     print("Habits Menu\n1. Add Habit\n2. Remove Habit\n3. Exit")
                     habit_menu_choice = input("Choice: ")
                     match habit_menu_choice:
                         case "1":
                             add_habit(input("Habit: "),input("Frequency: "),input("Target: "),habits)
+                            add_log("Habit Added",habits[-1].habit,logs)
                         case "2":
-                            remove_habit(int(input("Task Number: ")),habits)
+                            i = int(input("Task Number: "))
+                            add_log("Habit Removed",habits[i-1].habit,logs)
+                            remove_habit(i,habits)
                         case "3":
                             print()
                             break
@@ -144,8 +181,11 @@ def main():
                     match note_menu_choice:
                         case "1":
                             add_note(input("Title: "),input("Content: "),notes)
+                            add_log("Note Added",f"{notes[-1].title} - {notes[-1].content}",logs)
                         case "2":
+                            add_log("Note Removed",f"{notes[-1].title} - {notes[-1].content}",logs)
                             remove_note(int(input("Note Number: ")),notes)
+                            
                         case "3":
                             print()
                             break
@@ -155,10 +195,36 @@ def main():
                     data["note"] = notes
 
             case "4":
-                print("Focus")
+                while True:
+                    print(tabulate([[log.action,log.detail,log.time] for log in logs],headers =["Action","Detail","Time"],tablefmt="fancy_grid"))
+                    print()
+                    print("Logs Menu\n1. Clear\n2. Exit")
+                    log_menu_choice = input("Choice: ")
+                    match log_menu_choice:
+                        case "1":
+                            logs = []
+                        case "2":
+                            print()
+                            break
+                        case _:
+                            print("Invalid Input")
+                    print()
+                    data["log"] = logs
 
             case "5":
-                print("stats")
+                total_tasks = len(tasks)
+                completed_tasks = len([task for task in tasks if task.done == "Complete"])
+                total_habits = len(habits)
+                total_notes = len(notes)
+                total_logs = len(logs)
+                print("Stats")
+                print(f"Total Tasks: {total_tasks}")
+                print(f"Completed Tasks: {completed_tasks}")
+                print(f"Incomplete Tasks: {total_tasks - completed_tasks}")
+                print(f"Total Habits: {total_habits}")
+                print(f"Total Notes: {total_notes}")
+                print(f"Total Logs: {total_logs}")
+                print()
 
             case "6":
                 break
@@ -170,6 +236,7 @@ def main():
     data["task"] = [task.to_dict() for task in tasks]
     data["habit"] = [habit.to_dict() for habit in habits]
     data["note"] = [note.to_dict() for note in notes]
+    data["log"] = [log.to_dict() for log in logs]
     with open("data.json", "w") as file:
         json.dump(data,file,indent=4)
         file.close()
@@ -198,6 +265,9 @@ def add_note(title,content,notes):
 
 def remove_note(i,notes):
     del notes[i-1]
+
+def add_log(action,detail,logs):
+    logs.append(Log(action,detail,datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
 
 if __name__ == "__main__":
