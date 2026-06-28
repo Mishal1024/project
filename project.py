@@ -120,7 +120,6 @@ def main():
     habits = data["habit"]
     notes = data["note"]
     logs = data["log"]
-    print(f.renderText("Productivity System"))
     while True:
         clear()
         print("Menu\n1. Tasks\n2. Habits\n3. Notes\n4. Logs\n5. Stats\n6. Exit")
