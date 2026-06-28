@@ -140,14 +140,18 @@ def main():
                             add_task(input("Task: ").strip(),input("Priority: ").strip(),tasks)
                             add_log("Task Added",tasks[-1].task,logs)
                         case "2":
-                            i = int_validation("Task Number: ",tasks)
-                            if i is None:
+                            try:
+                                i = int_validation(input("Task Number: "),tasks)
+                            except ValueError:
+                                invalid_input()
                                 continue
                             mark_task(i,tasks)
                             add_log("Task Completed",tasks[i-1].task,logs)
                         case "3":
-                            i = int_validation("Task Number: ",tasks)
-                            if i is None:
+                            try:
+                                i = int_validation(input("Task Number: "),tasks)
+                            except ValueError:
+                                invalid_input()
                                 continue
                             unmark_task(i,tasks)
                             add_log("Task Uncompleted",tasks[i-1].task,logs)
@@ -178,8 +182,10 @@ def main():
                             add_habit(input("Habit: ").strip(),input("Frequency: ").strip(),input("Target: ").strip(),habits)
                             add_log("Habit Added",habits[-1].habit,logs)
                         case "2":
-                            i = int_validation("Habit Number: ",habits)
-                            if i is None:
+                            try:
+                                i = int_validation(input("Habit Number: "),habits)
+                            except ValueError:
+                                invalid_input()
                                 continue
                             add_log("Habit Removed",habits[i-1].habit,logs)
                             remove_habit(i,habits)
@@ -204,8 +210,10 @@ def main():
                             add_note(input("Title: ").strip(),input("Content: ").strip(),notes)
                             add_log("Note Added",f"{notes[-1].title} - {notes[-1].content}",logs)
                         case "2":
-                            i = int_validation("Note Number: ",notes)
-                            if i is None:
+                            try:
+                                i = int_validation(input("Note Number: "),notes)
+                            except ValueError:
+                                invalid_input()
                                 continue
                             add_log("Note Removed",f"{notes[i-1].title} - {notes[i-1].content}",logs)
                             remove_note(i,notes)
@@ -301,15 +309,11 @@ def add_log(action,detail,logs):
     if len(logs) > 100:
         del logs[0]
 
-def int_validation(prompt,items):
-    try:
-        n = int(input(prompt))
-        if n < 1 or n > len(items):
-            raise ValueError
-        return n
-    except ValueError:
-        invalid_input()
-        return None
+def int_validation(n,items):
+    n = int(n)
+    if n < 1 or n > len(items):
+        raise ValueError
+    return n
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
