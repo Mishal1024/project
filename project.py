@@ -1,12 +1,26 @@
+"""
+Kyzen - CLI Productivity System
+
+Features:
+- Task management
+- Habit tracking
+- Note taking
+- Activity logging
+- Productivity stats
+"""
+
+# External libraries
 from tabulate import tabulate
+from pyfiglet import Figlet
+
+# Standard libraries
 import json
 from datetime import datetime
-from pyfiglet import Figlet
 import os
 import time
 
 
-
+# Represents a task with priority and completion status
 class Task:
     def __init__(self,task,priority):
         self.task = task
@@ -24,6 +38,7 @@ class Task:
         }
     
 
+# Represents a habit with frequency and target
 class Habit:
     def __init__(self,habit,frequency,target):
         self.habit = habit
@@ -41,6 +56,7 @@ class Habit:
         }
     
 
+# Represents a saved note
 class Note:
     def __init__(self,title,content):
         self.title = title
@@ -55,7 +71,7 @@ class Note:
             "content" : self.content
         }
 
-
+# Represents an action log with timestamp
 class Log:
     def __init__(self,action,detail,time):
         self.action = action
@@ -73,6 +89,7 @@ class Log:
         }
     
 
+# Load saved data from JSON file and convert dictionaries into objects
 try:
     with open("data.json", "r") as file:
         data = json.load(file)
@@ -102,7 +119,7 @@ try:
             temp.append(log)
         data["log"] = temp
         
-
+# If no file exists, start with empty data
 except (FileNotFoundError, json.JSONDecodeError):
     data = {
         "task":[],
@@ -112,19 +129,24 @@ except (FileNotFoundError, json.JSONDecodeError):
     }
 
 
+# Creates an object for Figlet
 f = Figlet(font = "standard")
 
 
 def main():
+    # Loads the data into lists
     tasks = data["task"]
     habits = data["habit"]
     notes = data["note"]
     logs = data["log"]
+
+    # Main application loop
     while True:
         clear()
         print("Menu\n1. Tasks\n2. Habits\n3. Notes\n4. Logs\n5. Stats\n6. Exit")
         main_menu_choice = input("Choice: ")
         match main_menu_choice:
+            # Task section
             case "1":
                 while True:
                     clear()
@@ -159,6 +181,7 @@ def main():
                             for task in tasks:
                                 if task.done == "Complete":
                                     add_log("Task Removed",task.task,logs)
+                            # Keep only incomplete tasks
                             tasks[:] = [task for task in tasks if task.done != "Complete"]
                             
                         case "5":
@@ -167,6 +190,7 @@ def main():
                             invalid_input()
                     data["task"] = tasks
 
+            # Habit section
             case "2":
                 while True:
                     clear()
@@ -195,6 +219,7 @@ def main():
                             invalid_input()
                     data["habit"] = habits
 
+            # Notes section
             case "3":
                 while True:
                     clear()
@@ -217,13 +242,13 @@ def main():
                                 continue
                             add_log("Note Removed",f"{notes[i-1].title} - {notes[i-1].content}",logs)
                             remove_note(i,notes)
-                            
                         case "3":
                             break
                         case _:
                             invalid_input()
                     data["note"] = notes
 
+            # Logs section
             case "4":
                 while True:
                     clear()
@@ -243,14 +268,17 @@ def main():
                             invalid_input()
                     data["log"] = logs
 
+            # Statistics section
             case "5":
                 while True:
                     clear()
                     total_tasks = len(tasks)
+                    # Number of completed tasks
                     completed_tasks = len([task for task in tasks if task.done == "Complete"])
                     total_habits = len(habits)
                     total_notes = len(notes)
                     total_logs = len(logs)
+
                     print("Stats")
                     print(f"Total Tasks: {total_tasks}")
                     print(f"Completed Tasks: {completed_tasks}")
@@ -267,7 +295,6 @@ def main():
                         case _:
                             invalid_input()
                             
-
             case "6":
                 break
 
@@ -275,50 +302,69 @@ def main():
                 invalid_input()
                 pass
 
+    # Convert object lists into dictionaries before saving to JSON
     data["task"] = [task.to_dict() for task in tasks]
     data["habit"] = [habit.to_dict() for habit in habits]
     data["note"] = [note.to_dict() for note in notes]
     data["log"] = [log.to_dict() for log in logs]
+
+    # Save the data to JSON file
     with open("data.json", "w") as file:
         json.dump(data,file,indent=4)
 
+    os.system('cls' if os.name == 'nt' else 'clear')
 
+
+# Add new task
 def add_task(task,priority,tasks):
     tasks.append(Task(task,priority))
 
+# Mark task as complete
 def mark_task(i,tasks):
     tasks[i-1].done = "Complete"
 
+# Mark Task as incomplete
 def unmark_task(i,tasks):
     tasks[i-1].done = "Incomplete"
 
+# Add new habit
 def add_habit(habit,frequency,target,habits):
     habits.append(Habit(habit,frequency,target))
 
+# Remove habit by index
 def remove_habit(i,habits):
     del habits[i-1]
 
+# Add new note
 def add_note(title,content,notes):
     notes.append(Note(title,content))
 
+# Remove note by index
 def remove_note(i,notes):
     del notes[i-1]
 
+# Add new log
 def add_log(action,detail,logs):
     logs.append(Log(action,detail,datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    # Limit logs to the latest 100 entries
     if len(logs) > 100:
         del logs[0]
 
+# Validate index input
 def int_validation(n,items):
     n = int(n)
+    # Raise error if number is out of range
     if n < 1 or n > len(items):
         raise ValueError
     return n
 
+# Clear terminal and display banner
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
     print(f.renderText("Kyzen"))
 
+
+# Display invalid input message
 def invalid_input():
     print("\nInvalid Input!")
     time.sleep(0.75)
@@ -332,5 +378,7 @@ if __name__ == "__main__":
         data["habit"] = [habit.to_dict() for habit in data["habit"]]
         data["note"] = [note.to_dict() for note in data["note"]]
         data["log"] = [log.to_dict() for log in data["log"]]
+        # Save data before force exit (Ctrl+C)
         with open("data.json", "w") as file:
             json.dump(data,file,indent=4)
+        os.system('cls' if os.name == 'nt' else 'clear')
