@@ -1,5 +1,5 @@
 # Kyzen
-   #### Video Demo:
+   #### Video Demo: https://youtu.be/DVWaTDNpQ8k
    #### Description:
 Kyzen is a Command Line productivity application build using python. It helps users organize and manage their tasks, habits and notes along with insights into their activity or progress, all within a terminal.
 
